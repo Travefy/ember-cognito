@@ -9,7 +9,7 @@ import {
   MockAuth,
   mockCognitoUser,
   newUser,
-} from 'ember-cognito/test-support';
+} from '@travefy/ember-cognito/test-support';
 import { reject, resolve } from 'rsvp';
 
 module('Unit | Service | cognito', function (hooks) {

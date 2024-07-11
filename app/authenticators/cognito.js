@@ -1,1 +1,1 @@
-export { default } from 'ember-cognito/authenticators/cognito';
+export { default } from '@travefy/ember-cognito/authenticators/cognito';

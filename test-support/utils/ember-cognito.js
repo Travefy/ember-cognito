@@ -1,1 +1,1 @@
-export * from 'ember-cognito/test-support/utils/ember-cognito';
+export * from '@travefy/ember-cognito/test-support/utils/ember-cognito';

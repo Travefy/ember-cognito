@@ -12,8 +12,8 @@ export default class ApplicationController extends Controller {
 
   constructor() {
     super(...arguments);
-    let poolId = localStorage.getItem('ember-cognito/dummy/poolId');
-    let clientId = localStorage.getItem('ember-cognito/dummy/clientId');
+    let poolId = localStorage.getItem('@travefy/ember-cognito/dummy/poolId');
+    let clientId = localStorage.getItem('@travefy/ember-cognito/dummy/clientId');
     // Ignore the defaults, which are used to test the configuration in unit tests
     // but don't work for the dummy app.
     if (poolId === 'us-east-1_TEST' && clientId === 'TEST') {
@@ -37,8 +37,8 @@ export default class ApplicationController extends Controller {
   @action
   saveIds(e) {
     e.preventDefault();
-    localStorage.setItem('ember-cognito/dummy/poolId', this.poolId);
-    localStorage.setItem('ember-cognito/dummy/clientId', this.clientId);
+    localStorage.setItem('@travefy/ember-cognito/dummy/poolId', this.poolId);
+    localStorage.setItem('@travefy/ember-cognito/dummy/clientId', this.clientId);
   }
 
   @action
