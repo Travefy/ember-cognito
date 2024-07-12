@@ -20,8 +20,8 @@ module('Unit | Service | cognito', function (hooks) {
     assert.strictEqual(service.poolId, 'us-east-1_TEST');
     assert.strictEqual(service.clientId, 'TEST');
     assert.strictEqual(
-      service.authenticationFlowType,
-      config.cognito.authenticationFlowType
+      service.authFlowType,
+      config.cognito.authFlowType
     );
   });
 

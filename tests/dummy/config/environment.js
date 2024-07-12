@@ -21,7 +21,7 @@ module.exports = function (environment) {
       poolId: 'us-east-1_TEST',
       clientId: 'TEST',
       autoRefreshSession: true,
-      authenticationFlowType: 'USER_SRP_AUTH',
+      authFlowType: 'USER_SRP_AUTH',
     },
   };
 

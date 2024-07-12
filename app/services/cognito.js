@@ -12,5 +12,5 @@ export default CognitoService.extend({
   poolId: cognitoEnv.poolId,
   clientId: cognitoEnv.clientId,
   autoRefreshSession: cognitoEnv.autoRefreshSession,
-  authenticationFlowType: cognitoEnv.authenticationFlowType,
+  authFlowType: cognitoEnv.authFlowType,
 });
