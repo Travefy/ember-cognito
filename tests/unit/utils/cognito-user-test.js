@@ -8,7 +8,7 @@ import {
   MockAuth,
   newSession,
   newUser,
-} from 'ember-cognito/test-support';
+} from '@travefy/ember-cognito/test-support';
 import setupSinonTest from '../../helpers/sinon';
 
 module('Unit | Utility | cognito user', function (hooks) {

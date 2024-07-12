@@ -1,1 +1,1 @@
-export { default } from 'ember-cognito/utils/cognito-user';
+export { default } from '@travefy/ember-cognito/utils/cognito-user';
