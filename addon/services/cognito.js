@@ -58,7 +58,7 @@ export default class CognitoService extends Service {
     password,
     attributes,
     validationData,
-    autoSignIn = false
+    autoSignIn = true
   ) {
     this.configure();
     const userAttributes = normalizeAttributes(attributes);
