@@ -11,7 +11,7 @@ export default class CognitoAuthenticator extends Base {
     @readOnly('cognito.poolId') poolId;
     @readOnly('cognito.clientId') clientId;
     @readOnly('cognito.authenticationFlowType') authenticationFlowType;
-    @readonly('cognito.nextStepOptions') cognitoNextStepOptions;
+    @readOnly('cognito.nextStepOptions') cognitoNextStepOptions;
 
     async restore({ poolId, clientId }) {
         // this.cognito.configure({
