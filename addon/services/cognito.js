@@ -11,6 +11,9 @@ import { reject } from 'rsvp';
  * This is a container for easily accessing the logged-in CognitoUser object,
  * as well as creating others using signUp().
  */
+
+const isTesting = false; 
+
 export default class CognitoService extends Service {
   @service session;
   amplify = Amplify;
@@ -60,7 +63,7 @@ export default class CognitoService extends Service {
     validationData,
     autoSignIn = true
   ) {
-    this.configure();
+    // this.configure();
     const userAttributes = normalizeAttributes(attributes);
     const result = await this.auth.signUp({
       username,
@@ -89,7 +92,7 @@ export default class CognitoService extends Service {
    * @returns {Promise<any>}
    */
   async confirmSignUp(username, code, options) {
-    this.configure();
+    // this.configure();
     return this.auth.confirmSignUp({ username, code, options });
   }
 
@@ -110,7 +113,7 @@ export default class CognitoService extends Service {
    * @returns {*|Promise<string>}
    */
   resendSignUp(username) {
-    this.configure();
+    // this.configure();
     return this.auth.resendSignUpCode({ username });
   }
 
@@ -120,7 +123,7 @@ export default class CognitoService extends Service {
    * @returns {*|Promise<any>|RSVP.Promise|void}
    */
   forgotPassword(username) {
-    this.configure();
+    // this.configure();
     return this.auth.resetPassword({ username });
   }
 
@@ -132,7 +135,7 @@ export default class CognitoService extends Service {
    * @returns {*|Promise<void>|void}
    */
   forgotPasswordSubmit(username, confirmationCode, newPassword) {
-    this.configure();
+    // this.configure();
     return this.auth.confirmResetPassword({
       username,
       confirmationCode,

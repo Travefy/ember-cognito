@@ -27,10 +27,10 @@ export default class CognitoAuthenticator extends Base {
     @readOnly('cognito.authenticationFlowType') authenticationFlowType;
 
     async restore({ poolId, clientId }) {
-        this.cognito.configure({
-            userPoolId: poolId,
-            userPoolWebClientId: clientId,
-        });
+        // this.cognito.configure({
+        //     userPoolId: poolId,
+        //     userPoolWebClientId: clientId,
+        // });
         const user = await this.auth.getCurrentUser();
         return this._resolveAuth(user);
     }
@@ -148,7 +148,7 @@ export default class CognitoAuthenticator extends Base {
     }
 
     async authenticate(params) {
-        this.cognito.configure();
+        // this.cognito.configure();
 
         const { username, password, state } = params;
 
