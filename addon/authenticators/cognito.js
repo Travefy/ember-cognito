@@ -130,7 +130,7 @@ export default class CognitoAuthenticator extends Base {
             return this._submitChallengeResponse(params.answer);
         }
         
-        throw new Error(nextStep);
+        throw nextStep;
     }
 
     async _submitChallengeResponse(answer) {
