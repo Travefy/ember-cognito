@@ -47,7 +47,7 @@ export default class CognitoAuthenticator extends Base {
         this._storeDeviceKey(deviceKey);
         localStorage.removeItem(currentUserEmailKey);
 
-        return sessionDetails;
+        return { nextStep: CognitoNextStepsV6.DONE, sessionDetails };
     }
 
     _storeDeviceKey(deviceKey) {
@@ -130,12 +130,13 @@ export default class CognitoAuthenticator extends Base {
             return this._submitChallengeResponse(params.answer);
         }
 
-        return this._receivedMfaChallenge(nextStep);  
+        // return this._receivedMfaChallenge(nextStep);  
+        return { nextStep };  
     }
 
-    _receivedMfaChallenge(nextStep) {
-        throw new Error(`Not Implemented.`);
-    }
+    // _receivedMfaChallenge(nextStep) {
+    //     return nextStep;
+    // }
 
     async _submitChallengeResponse(answer) {
         let authResult = await this.auth.confirmSignIn({ challengeResponse: answer });
