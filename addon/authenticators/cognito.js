@@ -26,7 +26,7 @@ export default class CognitoAuthenticator extends Base {
     }
 
     async invalidate(data) {
-        await this.cognito.user.signOut();
+        await this.cognito.signOut();
         set(this, 'cognito.user', undefined);
         return data;
     }
