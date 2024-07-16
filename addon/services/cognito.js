@@ -261,7 +261,7 @@ export default class CognitoService extends Service {
     }
 
     async _handleChallengeMfa(nextStep, params) {
-        if (nextStep.additionalInfo.challengeName === "DEVICE_TRACKING_CHALLENGE") {
+        if (nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE && nextStep.additionalInfo.challengeName === "DEVICE_TRACKING_CHALLENGE") {
             const deviceKey = this._getDeviceKey();
             return this._submitChallengeResponse(deviceKey);
         } else if (params?.answer) {
