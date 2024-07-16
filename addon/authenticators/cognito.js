@@ -21,7 +21,6 @@ export default class CognitoAuthenticator extends Base {
             return this.cognito.handleNextStep(nextStep, params);
         }
 
-        await this.cognito.signOut();
         return this.cognito.signIn(username, password);
     }
 

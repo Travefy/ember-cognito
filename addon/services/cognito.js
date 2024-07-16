@@ -31,7 +31,7 @@ export default class CognitoService extends Service {
     amplify = Amplify;
     auth = Auth;
     nextStepOptions = CognitoNextSteps;
-    currentUserEmail = null;
+    currentUserEmail = null; // store email when user begins login flow so we can, so we can save/retrieve deviceKey to/from storage.
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -68,7 +68,6 @@ export default class CognitoService extends Service {
         });
     }
 
-
     /**
      * Method for signing in a user.
      *
@@ -76,6 +75,8 @@ export default class CognitoService extends Service {
      * @param password Plain-text initial password entered by user.
      */
     async signIn(username, password) {
+        await this.signOut();
+
         this.currentUserEmail = username;
         
         const authResult = await this.auth.signIn({
@@ -92,8 +93,8 @@ export default class CognitoService extends Service {
     /**
      * Method for signing out a user.
      */
-
     async signOut() {
+        this.currentUserEmail = username;
         return this.auth.signOut();
     }
 
@@ -113,6 +114,7 @@ export default class CognitoService extends Service {
         validationData,
         autoSignIn = true
     ) {
+        await this.signOut();
         const userAttributes = normalizeAttributes(attributes);
         const result = await this.auth.signUp({
             username,
