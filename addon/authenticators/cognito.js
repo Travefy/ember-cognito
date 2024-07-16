@@ -69,10 +69,10 @@ export default class CognitoAuthenticator extends Base {
             return this._resolveAuth();
         }
 
-        return this._handleState(user.nextStep, user)
+        return this._handleNextStep(user.nextStep, user)
     }
 
-    async _handleNewPasswordRequired({ password, state: { user } }) {
+    async _handleNewPasswordRequired({ password, nextStep: { user } }) {
         const user2 = await this.auth.completeNewPassword({ user, password });
         return this._handleSignIn(user2);
     }
@@ -90,7 +90,7 @@ export default class CognitoAuthenticator extends Base {
         }
     }
 
-    _handleState(nextStep, params) {
+    _handleNextStep(nextStep, params) {
         if (nextStep === 'refresh') {
             return this._handleRefresh();
         } else if (nextStep.signInStep === CognitoNextStepsV6.DONE) {
@@ -104,7 +104,7 @@ export default class CognitoAuthenticator extends Base {
                     || nextStep.signInStep === CognitoNextStepsV6.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
             return this._handleChallengeMfa(nextStep, params);
         } else {
-            throw new Error('invalid state');
+            throw new Error(`Unsupported nextStep ${nextStep?.signInStep}`);
         }
     }
 
@@ -126,18 +126,18 @@ export default class CognitoAuthenticator extends Base {
             return this._resolveAuth();
         }
 
-        return this._handleState(authResult.nextStep)
+        return this._handleNextStep(authResult.nextStep)
     }
 
     async authenticate(params) {
         // this.cognito.configure();
 
-        const { username, password, state } = params;
+        const { username, password, nextStep } = params;
 
         localStorage.setItem("currentUserEmail", username);
 
-        if (state) {
-            return this._handleState(state.name, params);
+        if (nextStep) {
+            return this._handleNextStep(nextStep, params);
         }
 
         await this.auth.signOut();
