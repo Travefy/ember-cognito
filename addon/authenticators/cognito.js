@@ -11,6 +11,7 @@ export default class CognitoAuthenticator extends Base {
     @readOnly('cognito.poolId') poolId;
     @readOnly('cognito.clientId') clientId;
     @readOnly('cognito.authenticationFlowType') authenticationFlowType;
+    @readOnly('cognito.nextStepOptions') cognitoNextStepOptions;
 
     async restore({ poolId, clientId }) {
         // this.cognito.configure({
@@ -65,7 +66,7 @@ export default class CognitoAuthenticator extends Base {
     }
 
     _handleSignIn(user) {
-        if (user.nextStep === CognitoNextStepsV6.DONE) {
+        if (user.nextStep === this.cognitoNextStepOptions.DONE) {
             return this._resolveAuth();
         }
 
@@ -93,15 +94,15 @@ export default class CognitoAuthenticator extends Base {
     _handleNextStep(nextStep, params) {
         if (nextStep === 'refresh') {
             return this._handleRefresh();
-        } else if (nextStep.signInStep === CognitoNextStepsV6.DONE) {
+        } else if (nextStep.signInStep === this.cognitoNextStepOptions.DONE) {
             return this._resolveAuth();
-        } else if (nextStep === CognitoNextStepsV6.COMPLETE_AUTO_SIGN_IN) {
+        } else if (nextStep === this.cognitoNextStepOptions.COMPLETE_AUTO_SIGN_IN) {
             return this.cognito.autoSignIn();
-        } else if (nextStep.signInStep === CognitoNextStepsV6.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
+        } else if (nextStep.signInStep === this.cognitoNextStepOptions.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
             return this._handleNewPasswordRequired(params);
-        } else if (nextStep.signInStep === CognitoNextStepsV6.CONFIRM_SIGN_IN_WITH_SMS_CODE 
-                    || nextStep.signInStep === CognitoNextStepsV6.CONFIRM_SIGN_IN_WITH_TOTP_CODE
-                    || nextStep.signInStep === CognitoNextStepsV6.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
+        } else if (nextStep.signInStep === this.cognitoNextStepOptions.CONFIRM_SIGN_IN_WITH_SMS_CODE 
+                    || nextStep.signInStep === this.cognitoNextStepOptions.CONFIRM_SIGN_IN_WITH_TOTP_CODE
+                    || nextStep.signInStep === this.cognitoNextStepOptions.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
             return this._handleChallengeMfa(nextStep, params);
         } else {
             throw new Error(`Unsupported nextStep ${nextStep?.signInStep}`);
@@ -122,7 +123,7 @@ export default class CognitoAuthenticator extends Base {
     async _submitChallengeResponse(answer) {
         let authResult = await this.auth.confirmSignIn({ challengeResponse: answer });
         
-        if (authResult.nextStep === CognitoNextStepsV6.DONE) {
+        if (authResult.nextStep === this.cognitoNextStepOptions.DONE) {
             return this._resolveAuth();
         }
 

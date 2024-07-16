@@ -1,6 +1,6 @@
 {
   "name": "@travefy/ember-cognito",
-  "version": "2.0.15",
+  "version": "2.0.18",
   "description": "Amplify v6 form of ember-cognito",
   "keywords": [
     "ember-addon",
