@@ -189,7 +189,7 @@ export default class CognitoService extends Service {
             return this._handleRefresh();
         } else if (nextStep.signInStep === this.nextStepOptions.DONE) {
             return this._resolveAuth();
-        } else if (nextStep === this.nextStepOptions.COMPLETE_AUTO_SIGN_IN) {
+        } else if (nextStep.signUpStep === this.nextStepOptions.COMPLETE_AUTO_SIGN_IN) {
             return this.autoSignIn();
         } else if (nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
             return this._handleNewPasswordRequired(params);
