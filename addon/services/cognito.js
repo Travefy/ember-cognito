@@ -94,7 +94,7 @@ export default class CognitoService extends Service {
      * Method for signing out a user.
      */
     async signOut() {
-        this.currentUserEmail = username;
+        this.currentUserEmail = null;
         return this.auth.signOut();
     }
 
