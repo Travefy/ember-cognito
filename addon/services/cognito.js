@@ -189,15 +189,15 @@ export default class CognitoService extends Service {
     async handleNextStep(nextStep, params) {
         if (nextStep === 'refresh') {
             return this._handleRefresh();
-        } else if (nextStep.signInStep === this.nextStepOptions.DONE) {
+        } else if (nextStep.signInStep === CognitoNextSteps.DONE) {
             return this._resolveAuth();
-        } else if (nextStep.signUpStep === this.nextStepOptions.COMPLETE_AUTO_SIGN_IN) {
+        } else if (nextStep.signUpStep === CognitoNextSteps.COMPLETE_AUTO_SIGN_IN) {
             return this.autoSignIn();
-        } else if (nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
+        } else if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
             return this._handleNewPasswordRequired(params);
-        } else if (nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_SMS_CODE 
-                    || nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_TOTP_CODE
-                    || nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
+        } else if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_SMS_CODE 
+                    || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_TOTP_CODE
+                    || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
             return this._handleChallengeMfa(nextStep, params);
         } else {
             throw new Error(`Unsupported nextStep ${nextStep?.signInStep}`);
@@ -218,7 +218,7 @@ export default class CognitoService extends Service {
         const user = this.user;
         if (user) {
             const session = await this.getCurrentSession();
-            return session.tokens.idToken?.toString();
+            return session.tokens.accessToken?.toString();
         } else {
             return reject('user not authenticated');
         }
@@ -250,7 +250,7 @@ export default class CognitoService extends Service {
     }
 
     async _handleSignIn(user) {
-        if (user.nextStep === this.nextStepOptions.DONE) {
+        if (user.nextStep === CognitoNextSteps.DONE) {
             return this._resolveAuth();
         }
 
@@ -263,7 +263,7 @@ export default class CognitoService extends Service {
     }
 
     async _handleChallengeMfa(nextStep, params) {
-        if (nextStep.signInStep === this.nextStepOptions.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE && nextStep.additionalInfo.challengeName === "DEVICE_TRACKING_CHALLENGE") {
+        if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE && nextStep.additionalInfo.challengeName === "DEVICE_TRACKING_CHALLENGE") {
             const deviceKey = this._getDeviceKey();
             return this._submitChallengeResponse(deviceKey);
         } else if (params?.answer) {
@@ -276,7 +276,7 @@ export default class CognitoService extends Service {
     async _submitChallengeResponse(answer) {
         let authResult = await this.auth.confirmSignIn({ challengeResponse: answer });
         
-        if (authResult.nextStep === this.nextStepOptions.DONE) {
+        if (authResult.nextStep === CognitoNextSteps.DONE) {
             return this._resolveAuth();
         }
 
