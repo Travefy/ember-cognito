@@ -276,7 +276,7 @@ export default class CognitoService extends Service {
     async _submitChallengeResponse(answer) {
         let authResult = await this.auth.confirmSignIn({ challengeResponse: answer });
         
-        if (authResult.nextStep === CognitoNextSteps.DONE) {
+        if (authResult.nextStep.signInStep === CognitoNextSteps.DONE) {
             return this._resolveAuth();
         }
 
