@@ -296,7 +296,8 @@ export default class CognitoService extends Service {
         const sessionDetails = {
             poolId: this.poolId,
             clientId: this.clientId,
-            access_token: session.tokens.idToken?.toString(),
+            access_token: session.tokens.accessToken?.toString(),
+            id_token: session.tokens.idToken?.toString(),
         };
 
         const deviceKey = session.tokens.accessToken?.payload.device_key ?? "NOKEY";
