@@ -21,9 +21,9 @@ export default class RegisterIndexRoute extends Component {
       const result = await this.cognito.signUp(username, password, attributes);
 
       // If the user is confirmed, take then right to the index page
-      if (result.nextStep === 'DONE') {
+      if (result.nextStep.signUpStep === 'DONE') {
         this.onComplete(result.user);
-      } else if (result.nextStep === 'COMPLETE_AUTO_SIGN_IN') {
+      } else if (result.nextStep.signUpStep === 'COMPLETE_AUTO_SIGN_IN') {
         const user = this.cognito.autoSignIn();
         this.onComplete(user);
       } else {

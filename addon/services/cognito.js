@@ -86,8 +86,7 @@ export default class CognitoService extends Service {
                 authFlowType: 'CUSTOM_WITH_SRP'
             }
         });
-
-        return this._handleSignIn(authResult);
+        return this.handleNextStep(authResult.nextStep);
     }
 
     /**
@@ -168,7 +167,8 @@ export default class CognitoService extends Service {
      * @returns {*|Promise<any>|RSVP.Promise|void}
      */
     forgotPassword(username) {
-        return this.auth.resetPassword({ username });
+        const result = this.auth.resetPassword({ username });
+        return result;
     }
 
     /**
@@ -200,7 +200,7 @@ export default class CognitoService extends Service {
                     || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
             return this._handleChallengeMfa(nextStep, params);
         } else {
-            throw new Error(`Unsupported nextStep ${nextStep?.signInStep}`);
+            throw new Error(`Unsupported nextStep: ${nextStep?.signInStep}`);
         }
     }
 
@@ -249,25 +249,17 @@ export default class CognitoService extends Service {
         }
     }
 
-    async _handleSignIn(user) {
-        if (user.nextStep === CognitoNextSteps.DONE) {
-            return this._resolveAuth();
-        }
-
-        return this.handleNextStep(user.nextStep, user)
-    }
-
     async _handleNewPasswordRequired({ password, nextStep: { user } }) {
-        const user2 = await this.auth.completeNewPassword({ user, password });
-        return this._handleSignIn(user2);
+        const result = await this.auth.completeNewPassword({ user, password });
+        return this.handleNextStep(result.nextStep);
     }
 
     async _handleChallengeMfa(nextStep, params) {
         if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE && nextStep.additionalInfo.challengeName === "DEVICE_TRACKING_CHALLENGE") {
             const deviceKey = this._getDeviceKey();
-            return this._submitChallengeResponse(deviceKey);
+            return await this._submitChallengeResponse(deviceKey);
         } else if (params?.answer) {
-            return this._submitChallengeResponse(params.answer);
+            return await this._submitChallengeResponse(params.answer);
         }
         
         throw { nextStep };
