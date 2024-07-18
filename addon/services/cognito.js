@@ -309,7 +309,7 @@ export default class CognitoService extends Service {
     }
 
     _currentUserEmailCacheKey = `CognitoService.currentUserEmail`;
-    _createNextStepCacheKey = (userEmail) => `CognitoService.${userEmail}.nextStep`
+    _nextStepCacheKey = `CognitoService.nextStep`;
     _createDeviceStorageKey() {
         const prefix = "CognitoIdentityServiceProvider";
         const clientId = this.amplify.getConfig().Auth.Cognito.userPoolClientId;;
@@ -330,20 +330,15 @@ export default class CognitoService extends Service {
     }
 
     get nextStep() {
-        const key = this.__createNextStepCacheKey(this.currentUserEmail);
-        const value = localStorage.getItem(key);
+        const value = localStorage.getItem(this._nextStepCacheKey);
         return isPresent(value) ? JSON.parse(value) : {};
     }
 
     _storeNextStep(nextStep) {
-        const currentUserEmail = localStorage.getItem(this._currentUserEmailCacheKey);
-        if (isNone(currentUserEmail)) throw "You broke it Danny"; // TODO handle correctly
-
-        const cacheKey = this._createNextStepCacheKey(currentUserEmail);
+        const cacheKey = this._nextStepCacheKey;
         let value = isPresent(nextStep) ? JSON.stringify(nextStep) : null;
         localStorage.setItem(cacheKey, value);
     }
-
 
     get currentUserEmail() {
         return localStorage.getItem(this._currentUserEmailCacheKey);
