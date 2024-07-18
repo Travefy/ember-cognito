@@ -31,7 +31,6 @@ export default class CognitoService extends Service {
     amplify = Amplify;
     auth = Auth;
     nextStepOptions = CognitoNextSteps;
-    currentUserEmail = null; // store email when user begins login flow so we can, so we can save/retrieve deviceKey to/from storage.
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -77,8 +76,8 @@ export default class CognitoService extends Service {
     async signIn(username, password) {
         await this.signOut();
 
-        this.currentUserEmail = username;
-        
+        this._storeCurrentUserEmail(username);
+
         const authResult = await this.auth.signIn({
             username,
             password,
@@ -93,7 +92,7 @@ export default class CognitoService extends Service {
      * Method for signing out a user.
      */
     async signOut() {
-        this.currentUserEmail = null;
+        this._clearCurrentFlowCache();
         return this.auth.signOut();
     }
 
@@ -114,6 +113,9 @@ export default class CognitoService extends Service {
         autoSignIn = true
     ) {
         await this.signOut();
+
+        this._storeCurrentUserEmail(username);
+
         const userAttributes = normalizeAttributes(attributes);
         const result = await this.auth.signUp({
             username,
@@ -187,21 +189,28 @@ export default class CognitoService extends Service {
     }
 
     async handleNextStep(nextStep, params) {
+        if (nextStep.signInStep === CognitoNextSteps.DONE) {
+            return this._resolveAuth();
+        }
+
+        this._storeNextStep(nextStep);
+
         if (nextStep === 'refresh') {
             return this._handleRefresh();
-        } else if (nextStep.signInStep === CognitoNextSteps.DONE) {
-            return this._resolveAuth();
-        } else if (nextStep.signUpStep === CognitoNextSteps.COMPLETE_AUTO_SIGN_IN) {
-            return this.autoSignIn();
-        } else if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
-            return this._handleNewPasswordRequired(params);
-        } else if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_SMS_CODE 
-                    || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_TOTP_CODE
-                    || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
-            return this._handleChallengeMfa(nextStep, params);
-        } else {
-            throw new Error(`Unsupported nextStep: ${nextStep?.signInStep}`);
         }
+        if (nextStep.signUpStep === CognitoNextSteps.COMPLETE_AUTO_SIGN_IN) {
+            return this.autoSignIn();
+        }
+        if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED) {
+            return this._handleNewPasswordRequired(params);
+        }
+        if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_SMS_CODE
+            || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_TOTP_CODE
+            || nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE) {
+            return this._handleChallengeMfa(nextStep, params);
+        }
+
+        throw new Error(`Unsupported nextStep: ${nextStep?.signInStep}`);
     }
 
     /*
@@ -233,7 +242,7 @@ export default class CognitoService extends Service {
 
     async restoreSession() {
         const user = await this.auth.getCurrentUser();
-        return this._resolveAuth(user);    
+        return this._resolveAuth(user);
     }
 
     async _handleRefresh() {
@@ -256,25 +265,25 @@ export default class CognitoService extends Service {
 
     async _handleChallengeMfa(nextStep, params) {
         if (nextStep.signInStep === CognitoNextSteps.CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE && nextStep.additionalInfo.challengeName === "DEVICE_TRACKING_CHALLENGE") {
-            const deviceKey = this._getDeviceKey();
+            const deviceKey = this.currentUsersDeviceKey();
             return await this._submitChallengeResponse(deviceKey);
         } else if (params?.answer) {
             return await this._submitChallengeResponse(params.answer);
         }
-        
+
         throw { nextStep };
     }
 
     async _submitChallengeResponse(answer) {
         let authResult = await this.auth.confirmSignIn({ challengeResponse: answer });
-        
+
         if (authResult.nextStep.signInStep === CognitoNextSteps.DONE) {
             return this._resolveAuth();
         }
 
         return this.handleNextStep(authResult.nextStep)
     }
-    
+
     async _resolveAuth() {
         const user = await this.auth.getCurrentUser();
         this._setUser(user);
@@ -299,21 +308,54 @@ export default class CognitoService extends Service {
         return sessionDetails;
     }
 
+    _currentUserEmailCacheKey = `CognitoService.currentUserEmail`;
+    _createNextStepCacheKey = (userEmail) => `CognitoService.${userEmail}.nextStep`
     _createDeviceStorageKey() {
         const prefix = "CognitoIdentityServiceProvider";
         const clientId = this.amplify.getConfig().Auth.Cognito.userPoolClientId;;
         const userEmail = this.currentUserEmail;
+        if (isNone(userEmail)) throw "You broke it Danny" // TODO fix this
         return `${prefix}.${clientId}.${userEmail}.deviceKey`;
     }
-    
+
+
+    get currentUsersDeviceKey() {
+        const key = this._createDeviceStorageKey();
+        return localStorage.getItem(key) ?? "NOKEY";
+    }
+
     _storeDeviceKey(deviceKey) {
         const key = this._createDeviceStorageKey();
         localStorage.setItem(key, deviceKey);
     }
 
-    _getDeviceKey() {
-        const key = this._createDeviceStorageKey();
-        return localStorage.getItem(key) ?? "NOKEY";
+    get nextStep() {
+        const key = this.__createNextStepCacheKey(this.currentUserEmail);
+        const value = localStorage.getItem(key);
+        return isPresent(value) ? JSON.parse(value) : {};
+    }
+
+    _storeNextStep(nextStep) {
+        const currentUserEmail = localStorage.getItem(this._currentUserEmailCacheKey);
+        if (isNone(currentUserEmail)) throw "You broke it Danny"; // TODO handle correctly
+
+        const cacheKey = this._createNextStepCacheKey(currentUserEmail);
+        let value = isPresent(nextStep) ? JSON.stringify(nextStep) : null;
+        localStorage.setItem(cacheKey, value);
+    }
+
+
+    get currentUserEmail() {
+        return localStorage.getItem(this._currentUserEmailCacheKey);
+    }
+
+    _storeCurrentUserEmail(email) {
+        localStorage.setItem(this._currentUserEmailCacheKey, email);
+    }
+
+    _clearCurrentFlowCache() {
+        this._storeNextStep(null);
+        this._storeCurrentUserEmail(null);
     }
 
     _isConfigured() {
